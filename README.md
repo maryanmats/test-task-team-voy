@@ -1,6 +1,6 @@
-# Getting Started with Create React App
+# TEST TASK FOR TEAMVOY
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+[DEMO LINK](https://maryanmats.github.io/test-task-team-voy/)
 
 ## Available Scripts
 

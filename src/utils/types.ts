@@ -1,5 +1,5 @@
 
-export interface PokemonGridProps {
+export interface PokemonListProps {
   data: {
     results: Pokemon[];
   };

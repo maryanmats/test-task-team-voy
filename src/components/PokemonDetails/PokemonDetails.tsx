@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import styles from "./PokemonDetails.module.scss";
 import { PokemonDetailsProps, PokemonType, Stat } from "../../utils/types";
 
-const PokemonDetails: React.FC<PokemonDetailsProps> = ({ selectedPokemon }) => {
+export const PokemonDetails: React.FC<PokemonDetailsProps> = ({ selectedPokemon }) => {
     const [showExtraInfo, setShowExtraInfo] = useState(false);
 
     const handleShowExtraInfo = () => {
         setShowExtraInfo((prev) => !prev);
     };
-    console.log(selectedPokemon ? "est" : 'net')
+    
     if (!selectedPokemon) {
         return (
             <div className={styles["pokemon-details"]}>
@@ -86,5 +86,3 @@ const PokemonDetails: React.FC<PokemonDetailsProps> = ({ selectedPokemon }) => {
         </div>
     );
 };
-
-export default PokemonDetails;

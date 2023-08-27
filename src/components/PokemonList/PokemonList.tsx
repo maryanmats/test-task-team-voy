@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import styles from "./PokemonGrid.module.scss";
-import { Pokemon, PokemonGridProps, PokemonType } from "../../utils/types";
+import styles from "./PokemonList.module.scss";
+import { Pokemon, PokemonListProps, PokemonType } from "../../utils/types";
 import { getTypeStyles } from "../../utils/getStyles";
 
-const PokemonGrid: React.FC<PokemonGridProps> = ({ data, onPokemonClick }) => {
+export const PokemonList: React.FC<PokemonListProps> = ({ data, onPokemonClick }) => {
   const [imageLoadError, setImageLoadError] = useState<{
     [key: string]: boolean;
   }>({});
@@ -78,7 +78,5 @@ const PokemonGrid: React.FC<PokemonGridProps> = ({ data, onPokemonClick }) => {
     </div>
   ));
 
-  return <div className={styles["pokemon-grid"]}>{pokemonCards}</div>;
+  return <div className={styles["pokemons"]}>{pokemonCards}</div>;
 };
-
-export default PokemonGrid;

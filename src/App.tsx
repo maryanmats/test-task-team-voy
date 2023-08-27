@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import PokemonGrid from "./components/PokemonGrid/PokemonGrid";
-import PokemonDetails from "./components/PokemonDetails/PokemonDetails";
+import { PokemonList } from "./components/PokemonList";
+import { PokemonDetails } from "./components/PokemonDetails";
 import "./App.scss";
-import Header from "./components/Header/Header";
+import { Header } from "./components/Header";
 import { Pokemon } from "./utils/types";
 import { usePokemons } from "./utils/helpers";
 import Loader from "./components/Loader/Loader";
-import ErrorPage from "./components/ErrorPage/ErrorPage";
+import { ErrorPage } from "./components/ErrorPage";
 
 const App: React.FC = () => {
   const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
@@ -30,7 +30,7 @@ const App: React.FC = () => {
   };
 
   const isLoadingData = isLoading ? (
-    <div className="empty-grid">
+    <div className="empty-list">
       <Loader />
     </div>
   ) : null;
@@ -41,15 +41,15 @@ const App: React.FC = () => {
     </div>
   ) : null;
 
-  const isPokemonGrid = data ? (
-    <PokemonGrid data={data} onPokemonClick={handlePokemonClick} />
+  const isPokemonList = data ? (
+    <PokemonList data={data} onPokemonClick={handlePokemonClick} />
   ) : null;
 
 
   const isPrevButtonVisible =
     !isLoading && data?.results && currentPage > 1 ? (
       <button className="load-more-button" onClick={handlePrevPage}>
-        Prev
+        Previous
       </button>
     ) : null;
 
@@ -63,15 +63,19 @@ const App: React.FC = () => {
   return (
     <div>
       <Header />
-      <div className="container">
-        {isLoadingData}
-        {isError}
-        {isPokemonGrid}
-          <PokemonDetails selectedPokemon={selectedPokemon} />
-        <div className="load-more-button-container">
-          {isPrevButtonVisible}
-          {isLoadMoreButtonVisible}
-        </div>
+        <div className="container">
+          <section className="pokemon-list">
+            {isLoadingData}
+            {isError}
+            {isPokemonList}
+              <div className="load-more-button-container">
+                  {isPrevButtonVisible}
+                  {isLoadMoreButtonVisible}
+              </div>
+          </section>
+          <section className="pokemon-details">
+            <PokemonDetails selectedPokemon={selectedPokemon} />
+          </section>
       </div>
     </div>
   );

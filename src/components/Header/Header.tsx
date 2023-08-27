@@ -1,7 +1,5 @@
 import styles from './Header.module.scss';
 
-const Header = () => {
+export const Header = () => {
   return <div className={styles.header}>PokeDex</div>;
 };
-
-export default Header;

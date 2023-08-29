@@ -6,9 +6,9 @@
   flex-wrap: wrap;
   gap: 25px;
 
-    .pokemon-type {
-        border-radius: 5px;
-        padding: 3px;
+    .pokemon-types {
+        display: flex;
+        gap: 5px;
     }
 
     .type-text {
@@ -17,6 +17,9 @@
 
     .pokemon-card-container {
         cursor: pointer;
+        width: 100%;
+        max-width: 250px; 
+        margin: 6px;
     }
 
     .pokemon-card {
@@ -45,4 +48,9 @@
             text-transform: capitalize;
         }
     }
+}
+
+.type-tag {
+  padding: 3px;
+  border-radius: 3px;
 }

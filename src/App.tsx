@@ -1,83 +1,102 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, createContext, ChangeEvent } from "react";
 import { PokemonList } from "./components/PokemonList";
 import { PokemonDetails } from "./components/PokemonDetails";
 import "./App.scss";
 import { Header } from "./components/Header";
-import { Pokemon } from "./utils/types";
-import { usePokemons } from "./utils/helpers";
-import Loader from "./components/Loader/Loader";
-import { ErrorPage } from "./components/ErrorPage";
+import axios from "axios";
+import { IPokemon } from "./utils/types";
+
+export const PokemonContext = createContext<any>({});
 
 const App: React.FC = () => {
-  const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [pokemons, setPokemons] = useState<IPokemon[]>([]);
+  const [filteredPokemons, setFilteredPokemons] = useState<IPokemon[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [offset, setOffset] = useState(0);
+  const [cardIndex, setCardIndex] = useState(-1);
   const pageSize = 12;
 
-  const { isLoading, error, data } = usePokemons(currentPage, pageSize);
+  function fetchPokemons(offset: number) {
+    axios
+      .get(`https://pokeapi.co/api/v2/pokemon/?limit=${pageSize}&offset=${offset}`)
+      .then((res) => {
+        setPokemons((prevPokemons) => {
+          return [...prevPokemons, ...res.data.results];
+        });
+        setFilteredPokemons((prevFilteredPokemons) => {
+          return [...prevFilteredPokemons, ...res.data.results];
+        });
+        console.log(res.data.results);
+      });
+  }
 
-  const handlePokemonClick = async (pokemon: Pokemon) => {
-    const response = await fetch(pokemon.url);
-    const pokemonData = await response.json();
-    setSelectedPokemon(pokemonData);
-  };
+  useEffect(() => {
+    fetchPokemons(offset);
+  }, []);
+
+  useEffect(() => {
+    setFilteredPokemons(
+      pokemons.filter(
+        (pokemon) =>
+          pokemon.details.types.filter((type) =>
+            type.type.name.includes(searchTerm.toLowerCase())
+          ).length > 0
+      )
+    );
+  }, [searchTerm]);
 
   const handleLoadMore = () => {
-    setCurrentPage((prevPage) => prevPage + 1);
+    fetchPokemons(offset + pageSize);
+    setOffset((prevState) => prevState + pageSize); 
   };
 
-  const handlePrevPage = () => {
-    setCurrentPage((prevPage) => prevPage - 1);
-  };
-
-  const isLoadingData = isLoading ? (
-    <div className="empty-list">
-      <Loader />
-    </div>
+  const isPokemonList = pokemons.length > 0 ? (
+    filteredPokemons.map((pokemon, index) => <PokemonContext.Provider
+      value={{ pokemons, setPokemons }}
+      key={pokemon.name}
+  ><PokemonList 
+      pokemon={pokemon} 
+      key={pokemon.name} 
+      index={index} 
+      setCardIndex={setCardIndex} 
+  /></PokemonContext.Provider>)
   ) : null;
-
-  const isError = error ? (
-    <div>
-      <ErrorPage errorMessage="Something wrong" />
-    </div>
-  ) : null;
-
-  const isPokemonList = data ? (
-    <PokemonList data={data} onPokemonClick={handlePokemonClick} />
-  ) : null;
-
-
-  const isPrevButtonVisible =
-    !isLoading && data?.results && currentPage > 1 ? (
-      <button className="load-more-button" onClick={handlePrevPage}>
-        Previous
-      </button>
-    ) : null;
+  
 
   const isLoadMoreButtonVisible =
-    !isLoading && data?.results && data.results.length === pageSize ? (
-      <button className="load-more-button" onClick={handleLoadMore}>
+      searchTerm.length === 0 ? (<button className="load-more-button" onClick={handleLoadMore}>
         Load More
-      </button>
-    ) : null;
+      </button>) : null;
 
   return (
     <div>
-      <Header />
-        <div className="container">
-          <section className="pokemon-list">
-            {isLoadingData}
-            {isError}
-            {isPokemonList}
-              <div className="load-more-button-container">
-                  {isPrevButtonVisible}
-                  {isLoadMoreButtonVisible}
-              </div>
-          </section>
-          <section className="pokemon-details">
-            <PokemonDetails selectedPokemon={selectedPokemon} />
-          </section>
-      </div>
+    <Header />
+    <div className="container">
+      <section className="wrapper">
+      <label htmlFor="search" className="search-text">Filter by type: </label>
+      <input
+        id="search"
+        type="text"
+        placeholder="Search by pokemon type"
+        value={searchTerm}
+        onChange={(e: ChangeEvent<HTMLInputElement>) =>
+          setSearchTerm(e.target.value)
+        }
+        className="search"
+      />
+      <section className="pokemon-list">
+        {isPokemonList}
+        </section>
+        <div className="load-more-button-container">
+          {isLoadMoreButtonVisible}
+        </div>
+        </section>
+
+      <section className="pokemon-details">
+        <PokemonDetails pokemon={pokemons[cardIndex]} />
+      </section>
     </div>
+  </div>
   );
 };
 

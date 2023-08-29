@@ -1,82 +1,60 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import styles from "./PokemonList.module.scss";
-import { Pokemon, PokemonListProps, PokemonType } from "../../utils/types";
+import axios from "axios";
+import { PokemonContext } from "../../App";
+import { IPokemon, IPokemonDetails } from "../../utils/types";
 import { getTypeStyles } from "../../utils/getStyles";
 
-export const PokemonList: React.FC<PokemonListProps> = ({ data, onPokemonClick }) => {
-  const [imageLoadError, setImageLoadError] = useState<{
-    [key: string]: boolean;
-  }>({});
-  const [pokemonDataWithTypes, setPokemonDataWithTypes] = useState<Pokemon[]>(
-    []
-  );
+interface InterfaceProps {
+  pokemon: IPokemon;
+  index: number;
+  setCardIndex: React.Dispatch<React.SetStateAction<number>>;
+}
+
+export const PokemonList: React.FC<InterfaceProps> = ({ pokemon, index, setCardIndex }) => {
+  const [pokemonDetails, setPokemonDetails] = useState<IPokemonDetails>();
+  const pokemonContext = useContext(PokemonContext);
 
   useEffect(() => {
-    const fetchPokemonTypes = async () => {
-      const pokemonDataArray: Pokemon[] = [];
+      axios
+          .get<IPokemonDetails>("https://pokeapi.co/api/v2/pokemon/" + pokemon.name)
+          .then((res) => {
+              setPokemonDetails(res.data);
+              pokemonContext.setPokemons(() => {
+                  pokemonContext.pokemons[index].details = res.data;
+                  return pokemonContext.pokemons;
+              });
+          });
+  }, []);
 
-      for (const pokemon of data.results) {
-        try {
-          const response = await fetch(pokemon.url);
-          const pokemonData = await response.json();
-          const types = pokemonData.types.map(
-            (type: PokemonType) => type.type.name
-          );
-          const pokemonDataWithType = { ...pokemon, types };
-          pokemonDataArray.push(pokemonDataWithType);
-        } catch (error) {
-          console.error("Error fetching Pokémon data:", error);
-        }
-      }
+  const typeStyles = pokemonDetails?.types.map(type => getTypeStyles(type.type.name)) || [];
 
-      setPokemonDataWithTypes(pokemonDataArray);
-    };
-
-    fetchPokemonTypes();
-  }, [data.results]);
-
-  const handleImageError = (pokemonName: string) => {
-    setImageLoadError((prevState) => ({ ...prevState, [pokemonName]: true }));
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const renderPokemonTypes = (types: any[]) =>
-    types.map((type, index) => (
-      <React.Fragment key={type}>
-        {index > 0 && " "}{" "}
-        <span style={getTypeStyles(type)} className={styles["pokemon-type"]}>
-          {type}
-        </span>
-      </React.Fragment>
-    ));
-
-  const pokemonCards = pokemonDataWithTypes.map((pokemon) => (
-    <div
-      key={pokemon.name}
-      className={styles["pokemon-card-container"]}
-      onClick={() => onPokemonClick(pokemon)}
-    >
-      <div className={styles["pokemon-card"]}>
-        {imageLoadError[pokemon.name] ? (
-          <div className={styles["image-not-found"]}>
-            <p>Image not found</p>
+  const pokemonCards = (
+      <div
+          key={pokemon.name}
+          className={styles["pokemon-card-container"]}
+          onClick={() => setCardIndex(index)}
+      >
+          <div className={styles["pokemon-card"]}>
+              <img
+                  src={pokemonDetails?.sprites.front_default}
+                  alt={pokemon.name}
+              />
+              <p>{pokemon.name}</p>
+              <div className={styles["pokemon-types"]}>
+                  {pokemonDetails?.types.map((type, idx) => (
+                      <div
+                          key={idx}
+                          className={styles["type-tag"]}
+                          style={typeStyles[idx]}
+                      >
+                          {type.type.name}
+                      </div>
+                  ))}
+              </div>
           </div>
-        ) : (
-          <img
-            src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${
-              pokemon.url.split("/")[6]
-            }.png`}
-            alt={pokemon.name}
-            onError={() => handleImageError(pokemon.name)}
-          />
-        )}
-        <p>{pokemon.name}</p>
-        <div className={styles["pokemon-types"]}>
-          {renderPokemonTypes(pokemon.types)}
-        </div>
       </div>
-    </div>
-  ));
+  );
 
   return <div className={styles["pokemons"]}>{pokemonCards}</div>;
 };

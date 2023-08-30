@@ -8,6 +8,10 @@
   gap: 10px;
   margin-top: 72px;
 
+  position: sticky;
+  top: 10%;
+  z-index: 1;
+
   img {
     width: 150px;
   }

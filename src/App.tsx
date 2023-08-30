@@ -14,11 +14,18 @@ const App: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [offset, setOffset] = useState(0);
   const [cardIndex, setCardIndex] = useState(-1);
+  const [isLoading, setIsLoading] = useState(false);
   const pageSize = 12;
 
   function fetchPokemons(offset: number) {
+    if (isLoading) {
+      return;
+    }
+  
+    setIsLoading(true);
+  
     axios
-      .get(`https://pokeapi.co/api/v2/pokemon/?limit=${pageSize}&offset=${offset}`)
+      .get(`https://pokeapi.co/api/v2/pokemon?limit=${pageSize}&offset=${offset}`)
       .then((res) => {
         setPokemons((prevPokemons) => {
           return [...prevPokemons, ...res.data.results];
@@ -26,9 +33,12 @@ const App: React.FC = () => {
         setFilteredPokemons((prevFilteredPokemons) => {
           return [...prevFilteredPokemons, ...res.data.results];
         });
-        console.log(res.data.results);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }
+  
 
   useEffect(() => {
     fetchPokemons(offset);
@@ -64,9 +74,16 @@ const App: React.FC = () => {
   
 
   const isLoadMoreButtonVisible =
-      searchTerm.length === 0 ? (<button className="load-more-button" onClick={handleLoadMore}>
-        Load More
-      </button>) : null;
+  searchTerm.length === 0 ? (
+    <button
+      className="load-more-button"
+      onClick={handleLoadMore}
+      disabled={isLoading} // Disable the button when isLoading is true
+    >
+      Load More
+    </button>
+  ) : null;
+
 
   return (
     <div>
